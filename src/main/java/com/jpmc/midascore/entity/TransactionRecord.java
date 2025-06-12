@@ -23,14 +23,18 @@ public class TransactionRecord {
     private float amount;
 
     @Column(nullable = false)
+    private float incentive = 0.0f;
+
+    @Column(nullable = false)
     private LocalDateTime timeStamp;
 
     public  TransactionRecord() {}
 
-    public TransactionRecord(UserRecord sender, UserRecord recipient, float amount) {
+    public TransactionRecord(UserRecord sender, UserRecord recipient, float amount, float incentive) {
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.incentive = incentive;
         this.timeStamp = LocalDateTime.now();
     }
 
@@ -72,6 +76,14 @@ public class TransactionRecord {
 
     public void setTimeStamp(LocalDateTime timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    public float getIncentive() {
+        return incentive;
+    }
+
+    public void setIncentive(float incentive) {
+        this.incentive = incentive;
     }
 }
 

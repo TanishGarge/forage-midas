@@ -8,6 +8,8 @@ public class Transaction {
     private long recipientId;
     private float amount;
 
+    private float incentive = 0.0f;
+
     public Transaction() {
     }
 
@@ -39,6 +41,14 @@ public class Transaction {
 
     public void setAmount(float amount) {
         this.amount = amount;
+    }
+
+    public float getIncentive() {
+        return incentive;
+    }
+
+    public void setIncentive(float incentive) {
+        this.incentive = incentive;
     }
 
     @Override

@@ -2,9 +2,11 @@ package com.jpmc.midascore.component;
 
 import com.jpmc.midascore.entity.TransactionRecord;
 import com.jpmc.midascore.entity.UserRecord;
+import com.jpmc.midascore.foundation.Incentive;
 import com.jpmc.midascore.foundation.Transaction;
 import com.jpmc.midascore.repository.TransactionRepository;
 import com.jpmc.midascore.repository.UserRepository;
+import com.jpmc.midascore.service.IncentiveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class KafkaConsumer {
 
     @Autowired
     private TransactionRepository transactionRepository;
+
+    @Autowired
+    private IncentiveService incentiveService;
 
     @KafkaListener(topics = "${general.kafka-topic}", groupId = "midas-core-group")
     public void handleTransaction(Transaction transaction) {
@@ -50,16 +55,18 @@ public class KafkaConsumer {
         }
 
         // Process Transaction
+        Incentive incentive = incentiveService.getIncentive(transaction);
+        transaction.setIncentive(incentive.getAmount());
         sender.setBalance(sender.getBalance() - transaction.getAmount());
-        recipient.setBalance(recipient.getBalance() + transaction.getAmount());
+        recipient.setBalance(recipient.getBalance() + transaction.getAmount() + transaction.getIncentive());
 
         userRepository.save(sender);
         userRepository.save(recipient);
 
         TransactionRecord transactionRecord = new TransactionRecord(
-                sender, recipient, transaction.getAmount()
+                sender, recipient, transaction.getAmount(), transaction.getIncentive()
         );
         transactionRepository.save(transactionRecord);
-        logger.info("Transaction processed successfully. Sender: {} (New Balance: {}), Recipient: {} (New Balance: {})", sender.getName(), sender.getBalance(), recipient.getName(), recipient.getBalance());
+        logger.info("Transaction processed successfully. Sender: {} (New Balance: {}), Recipient: {} (New Balance: {}, incentive: {})", sender.getName(), sender.getBalance(), recipient.getName(), recipient.getBalance(), transaction.getIncentive());
     }
 }
